@@ -40,20 +40,20 @@ pip install -r requirements.txt
 cp .env.example .env
 
 # Edit .env file and add your API key
-MY_API_KEY=AIzaSyD5L0po7bBIKcexd9VovE5L9rUCVrVH3xY
+MY_API_KEY= "enter your API key here"
 FLASK_ENV=development
 SECRET_KEY=your-secret-key-here
 ```
 
 **Option B: Export directly (Windows)**
 ```cmd
-set MY_API_KEY=AIzaSyD5L0po7bBIKcexd9VovE5L9rUCVrVH3xY
+set MY_API_KEY=your_google_gemini_api_key_here
 set FLASK_ENV=development
 ```
 
 **Option B: Export directly (Linux/Mac)**
 ```bash
-export MY_API_KEY=AIzaSyD5L0po7bBIKcexd9VovE5L9rUCVrVH3xY
+export MY_API_KEY=your_google_gemini_api_key_here
 export FLASK_ENV=development
 ```
 
@@ -82,7 +82,7 @@ The app will be available at `http://localhost:5000`
 ### 3. Set Environment Variables
 In Render dashboard → Environment:
 ```
-MY_API_KEY = AIzaSyD5L0po7bBIKcexd9VovE5L9rUCVrVH3xY
+MY_API_KEY = your_google_gemini_api_key_here
 FLASK_ENV = production
 SECRET_KEY = your-random-secret-key-here
 ```
@@ -110,7 +110,7 @@ railway up
 
 ### 3. Set Environment Variables
 ```bash
-railway variables set MY_API_KEY=AIzaSyD5L0po7bBIKcexd9VovE5L9rUCVrVH3xY
+railway variables set MY_API_KEY=your_google_gemini_api_key_here
 railway variables set FLASK_ENV=production
 railway variables set SECRET_KEY=your-random-secret-key-here
 ```
