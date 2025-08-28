@@ -102,13 +102,36 @@ def load_fake_passwords():
             })
         return sanitized
 
+def get_api_key():
+    """Get API key from environment variables with fallback support.
+    
+    Tries multiple sources:
+    1. GOOGLE_API_KEY (standard for google-generativeai)
+    2. MY_API_KEY (legacy from .env file)
+    3. GEMINI_API_KEY (alternative naming)
+    
+    Works both locally (.env) and on Render (environment variables).
+    """
+    # Try different possible API key names
+    api_key_names = ['GOOGLE_API_KEY', 'MY_API_KEY', 'GEMINI_API_KEY']
+    
+    for key_name in api_key_names:
+        api_key = os.environ.get(key_name)
+        if api_key:
+            print(f"✅ Found API key in {key_name}")
+            return api_key
+    
+    print("❌ No API key found. Checked: " + ", ".join(api_key_names))
+    return None
+
 def initialize_ai():
     """Initialize AI guesser using API key from environment variable."""
     try:
-        # 🔑 Read API key from environment variable for security
-        api_key = os.environ.get('MY_API_KEY')
+        # 🔑 Get API key with fallback support for both local and Render
+        api_key = get_api_key()
         if not api_key:
-            print("❌ MY_API_KEY environment variable not set")
+            print("❌ Google Generative AI API key not found")
+            print("💡 Set one of: GOOGLE_API_KEY, MY_API_KEY, or GEMINI_API_KEY")
             return False
             
         simulator['ai'] = AIGuesser(api_key)
@@ -274,12 +297,60 @@ def api_generate_hash():
         print(f" Hash generation error: {e}")
         return jsonify({'error': True, 'message': f'Hash generation failed: {str(e)}'}), 500
 
+@app.route('/api/test-api-key')
+def test_api_key():
+    """Test route to verify API key is loaded correctly."""
+    try:
+        api_key = get_api_key()
+        
+        if not api_key:
+            return jsonify({
+                'success': False,
+                'message': 'No API key found',
+                'environment': 'local' if os.path.exists('.env') else 'production',
+                'checked_variables': ['GOOGLE_API_KEY', 'MY_API_KEY', 'GEMINI_API_KEY']
+            })
+        
+        # Test if we can initialize the AI module
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel('gemini-pro')
+            
+            # Simple test to verify API key works
+            response = model.generate_content("Say 'API key is working' in exactly those words.")
+            api_working = 'API key is working' in response.text
+            
+            return jsonify({
+                'success': True,
+                'message': 'API key loaded and verified',
+                'api_key_masked': f"{api_key[:8]}...{api_key[-4:]}" if len(api_key) > 12 else "***masked***",
+                'environment': 'local' if os.path.exists('.env') else 'production',
+                'api_test_passed': api_working,
+                'timestamp': datetime.now().isoformat()
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'message': f'API key found but failed to initialize: {str(e)}',
+                'api_key_masked': f"{api_key[:8]}...{api_key[-4:]}" if len(api_key) > 12 else "***masked***",
+                'environment': 'local' if os.path.exists('.env') else 'production'
+            })
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Test failed: {str(e)}',
+            'environment': 'local' if os.path.exists('.env') else 'production'
+        })
+
 @app.route('/data')
 def get_data():
     """Secure endpoint that fetches data from third-party API using hidden API key."""
     try:
         # Get API key from environment variable (never exposed to frontend)
-        api_key = os.environ.get('MY_API_KEY')
+        api_key = get_api_key()
         if not api_key:
             return jsonify({
                 'error': True, 

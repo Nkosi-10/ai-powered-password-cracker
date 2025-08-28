@@ -28,9 +28,17 @@ class AIGuesser:
         Args:
             api_key: Google Gemini API key. If None, tries to get from environment.
         """
-        self.api_key = api_key or os.getenv('GOOGLE_API_KEY')
+        # Try multiple environment variable names for compatibility
+        if not api_key:
+            api_key_names = ['GOOGLE_API_KEY', 'MY_API_KEY', 'GEMINI_API_KEY']
+            for key_name in api_key_names:
+                api_key = os.getenv(key_name)
+                if api_key:
+                    break
+        
+        self.api_key = api_key
         if not self.api_key:
-            raise ValueError("Google Gemini API key required. Set GOOGLE_API_KEY environment variable.")
+            raise ValueError("Google Gemini API key required. Set GOOGLE_API_KEY, MY_API_KEY, or GEMINI_API_KEY environment variable.")
         
         # Configure Gemini
         genai.configure(api_key=self.api_key)
