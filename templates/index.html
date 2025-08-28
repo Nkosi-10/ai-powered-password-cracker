@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Password Cracker Simulator</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts (simpler) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --hacker-green: #3b82f6;
+            --hacker-dark: #0f172a;
+            --hacker-gray: #111827;
+            --hacker-light: #1f2937;
+            --hacker-accent: #2d8ece;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, var(--hacker-dark) 0%, var(--hacker-gray) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .hacker-header {
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 20px var(--hacker-green);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 10px var(--hacker-green);
+        }
+
+        .glow-border {
+            border: 2px solid var(--hacker-green);
+            box-shadow: 0 0 20px var(--hacker-green);
+        }
+
+        .hacker-card {
+            background: rgba(26, 26, 26, 0.9);
+            border: 1px solid var(--hacker-green);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .hacker-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(199, 199, 199, 0.582);
+        }
+
+        .hacker-btn {
+            background: linear-gradient(45deg, var(--hacker-green), #00cc33);
+            border: none;
+            color: var(--hacker-dark);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .hacker-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--hacker-green);
+        }
+
+        .hacker-input {
+            background: rgba(10, 10, 10, 0.8);
+            border: 2px solid var(--hacker-green);
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .hacker-input:focus {
+            background: rgba(10, 10, 10, 0.9);
+            border-color: var(--hacker-accent);
+            box-shadow: 0 0 15px var(--hacker-accent);
+            color: var(--text-primary);
+        }
+
+        .matrix-bg { display: none; }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-online { background-color: var(--hacker-green); }
+        .status-offline { background-color: #ff4444; }
+        .status-warning { background-color: #ffaa00; }
+
+        .attack-progress {
+            height: 4px;
+            background: var(--hacker-gray);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .attack-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--hacker-green), var(--hacker-accent));
+            transition: width 0.3s ease;
+        }
+
+        .result-success {
+            border-color: var(--hacker-green);
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        .result-failure {
+            border-color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+        }
+
+        .typing-effect {
+            overflow: hidden;
+            border-right: 2px solid var(--hacker-green);
+            white-space: nowrap;
+            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: var(--hacker-green); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .scrollbar-custom::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-track {
+            background: var(--hacker-gray);
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-thumb {
+            background: var(--hacker-green);
+            border-radius: 4px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+            background: #00cc33;
+        }
+
+        @media (max-width: 768px) {
+            .hacker-header {
+                font-size: 1.5rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Background Effect -->
+    <div class="matrix-bg" id="matrixBg"></div>
+
+    <!-- Main Container -->
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h1 class="display-5 mb-3 fw-bold">
+                    <i class="fas fa-shield-alt text-primary"></i>
+                    Password Hash Simulator
+                    <i class="fas fa-lock text-primary"></i>
+                </h1>
+                <p class="lead text-secondary">
+                    <span class="typing-effect">Educational Cybersecurity Tool - Synthetic Data Only</span>
+                </p>
+                <div class="d-flex justify-content-center align-items-center mt-3">
+                    <span class="status-indicator status-online"></span>
+                    <span class="text-success">System Online</span>
+                    <span class="mx-3">|</span>
+                    <span class="text-warning">AI Module: <span id="aiStatus">Checking...</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ethical Warning -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-warning hacker-card" role="alert">
+                    <h5 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ETHICAL DISCLAIMER
+                    </h5>
+                    <p class="mb-0">
+                        <strong>This tool is for EDUCATIONAL PURPOSES ONLY.</strong><br>
+                        It ONLY works with synthetic password hashes and CANNOT crack real passwords or real systems.
+                        Use only in controlled, educational environments.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="row">
+            <!-- Left Panel - Input & Controls -->
+            <div class="col-lg-6 mb-4">
+                <div class="hacker-card p-4" style="border-color: var(--hacker-light);">
+                    <h3 class="text-center mb-4 glow-text">
+                        <i class="fas fa-crosshairs"></i>
+                        Attack Configuration
+                    </h3>
+
+                    <!-- Target Hash Input -->
+                    <div class="mb-3">
+                        <label for="targetHash" class="form-label">
+                            <i class="fas fa-bullseye"></i>
+                            Target Hash
+                        </label>
+                        <div class="input-group">
+                            <input type="text" class="form-control hacker-input" id="targetHash" 
+                                   placeholder="Enter 64-character SHA-256 hash (synthetic only)">
+                            <button class="btn btn-outline-secondary" type="button" id="validateHash">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                        <div class="form-text text-secondary">
+                            Use pre-generated hashes or enter your own synthetic hash
+                        </div>
+                    </div>
+
+                    <!-- Attack Method Selection -->
+                    <div class="mb-3">
+                        <label for="attackMethod" class="form-label">
+                            <i class="fas fa-fist-raised"></i>
+                            Attack Method
+                        </label>
+                        <select class="form-select hacker-input" id="attackMethod">
+                            <option value="dictionary">Dictionary Attack</option>
+                            <option value="rule_based">Rule-Based Attack</option>
+                            <option value="brute_force">Brute Force Attack</option>
+                            <option value="ai">AI-Powered Attack</option>
+                        </select>
+                    </div>
+
+                    <!-- Method-Specific Options -->
+                    <div id="methodOptions" class="mb-3">
+                        <!-- Brute Force Options -->
+                        <div id="bruteForceOptions" class="d-none">
+                            <label for="maxLength" class="form-label">
+                                <i class="fas fa-ruler"></i>
+                                Maximum Password Length
+                            </label>
+                            <input type="range" class="form-range" id="maxLength" min="1" max="6" value="4">
+                            <div class="d-flex justify-content-between">
+                                <span>1</span>
+                                <span id="maxLengthValue">4</span>
+                                <span>6</span>
+                            </div>
+                        </div>
+
+                        <!-- AI Options -->
+                        <div id="aiOptions" class="d-none">
+                            <label for="context" class="form-label">
+                                <i class="fas fa-brain"></i>
+                                Password Context (Optional)
+                            </label>
+                            <input type="text" class="form-control hacker-input" id="context" 
+                                   placeholder="e.g., user's birthday, favorite color">
+                        </div>
+                    </div>
+
+                    <!-- Quick Hash Generation -->
+                    <div class="mb-3">
+                        <label for="quickPassword" class="form-label">
+                            <i class="fas fa-magic"></i>
+                            Quick Hash Generator
+                        </label>
+                        <div class="input-group">
+                            <input type="text" class="form-control hacker-input" id="quickPassword" 
+                                   placeholder="Enter password to hash">
+                            <button class="btn btn-outline-info" type="button" id="generateHash">
+                                <i class="fas fa-hashtag"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Attack Button -->
+                    <div class="d-grid">
+                        <button class="btn hacker-btn btn-lg" id="startAttack" disabled>
+                            <i class="fas fa-rocket"></i>
+                            LAUNCH ATTACK
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pre-generated Hashes -->
+                <div class="hacker-card p-4" style="border-color: var(--hacker-light);">
+                    <h5 class="text-center mb-3">
+                        <i class="fas fa-database"></i>
+                        Sample Hashes
+                    </h5>
+                    <div class="scrollbar-custom" style="max-height: 200px; overflow-y: auto;">
+                        <div id="fakeHashesList" class="list-group list-group-flush">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Results & Status -->
+            <div class="col-lg-6 mb-4">
+                <div class="hacker-card p-4" style="border-color: var(--hacker-light);">
+                    <h3 class="text-center mb-4 glow-text">
+                        <i class="fas fa-chart-line"></i>
+                        Attack Results
+                    </h3>
+
+                    <!-- Attack Progress -->
+                    <div id="attackProgress" class="d-none mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Attack Progress</span>
+                            <span id="progressText">Initializing...</span>
+                        </div>
+                        <div class="attack-progress">
+                            <div class="attack-progress-bar" id="progressBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Results Display -->
+                    <div id="resultsDisplay">
+                        <div class="text-center text-secondary">
+                            <i class="fas fa-terminal fa-3x mb-3"></i>
+                            <p>Ready to launch attack...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="hacker-card p-4">
+                    <h5 class="text-center mb-3">
+                        <i class="fas fa-server"></i>
+                        System Status
+                    </h5>
+                    <div id="systemStatus">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Backend Status:</span>
+                            <span class="text-success">Online</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>AI Module:</span>
+                            <span id="aiStatusDetail">Checking...</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Fake Data:</span>
+                            <span id="fakeDataStatus">Loading...</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Last Update:</span>
+                            <span id="lastUpdate">-</span>
+                        </div>
+                    </div>
+                    
+                    <!-- API Data Section -->
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-info w-100" id="fetchApiData">
+                            <i class="fas fa-download"></i> Fetch API Data
+                        </button>
+                        <div id="apiDataDisplay" class="mt-2 d-none">
+                            <small class="text-secondary">API Response:</small>
+                            <div class="bg-dark p-2 rounded mt-1" style="font-size: 0.75rem;">
+                                <code id="apiDataContent" class="text-success"></code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- USB section removed for simplicity -->
+
+        <!-- Footer -->
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <div class="hacker-card p-3">
+                    <p class="mb-0 text-secondary">
+                        <i class="fas fa-code"></i>
+                        Built by Nkosi | 
+                        <i class="fas fa-shield-alt"></i>
+                        Ethical hacking simulation | 
+                        <i class="fas fa-graduation-cap"></i>
+                        Cybersecurity learning
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content hacker-card">
+                <div class="modal-body text-center p-4">
+                    <div class="pulse">
+                        <i class="fas fa-cog fa-spin fa-3x text-warning mb-3"></i>
+                    </div>
+                    <h5>Attack in Progress</h5>
+                    <p class="text-secondary">Please wait while we attempt to crack the password...</p>
+                    <div class="attack-progress mt-3">
+                        <div class="attack-progress-bar" id="modalProgressBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Main JavaScript -->
+    <script src="static/js/app.js"></script>
+</body>
+</html>

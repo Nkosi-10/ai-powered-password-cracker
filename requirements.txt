@@ -1,0 +1,25 @@
+# Core Dependencies
+Flask==2.3.3
+Flask-CORS==4.0.0
+Werkzeug==2.3.7
+google-generativeai==0.3.2
+requests==2.31.0
+hashlib2==1.0.3
+colorama==0.4.6
+python-dotenv==1.0.0
+click>=8.1.0
+rich>=13.0.0
+python-dotenv>=1.0.0
+
+# Testing Dependencies
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Web Application Dependencies
+flask>=2.3.0
+flask-cors>=4.0.0
+gunicorn>=21.0.0
+werkzeug>=2.3.0
+
+# Additional Utilities
+requests>=2.31.0
